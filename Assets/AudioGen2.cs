@@ -31,8 +31,8 @@ public class AudioGen2: MonoBehaviour
 	private bool running = false;
 
 	public float[] lastSamples=new float[2];
-	static public int _position = 0;
-	static public int position { get { return _position; } set { _position = value; } }
+	public int _position = 0;
+	public int position { get { return _position; } set { _position = value; } }
 	public int usingPosition { get { return _position + _offset; } }
 	public float _offsetPerc = 0;
 	public float offsetPerc { get { return _offsetPerc; } set { _offsetPerc = value; offset = Mathf.FloorToInt((sampleRate/Freq) * offsetPerc); updateOffset(0); } }
