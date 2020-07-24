@@ -4,6 +4,9 @@ using UnityEngine;
 using UnityEngine.Events;
 
 
+[System.Serializable] public class FloatEvent : UnityEvent<float> { }
+[System.Serializable] public class StringEvent : UnityEvent<string> { }
+
 //https://answers.unity.com/questions/1417541/is-it-possible-to-create-sound-with-scripting.html
 public class FrequencyGeneratorV2 : MonoBehaviour
 {
@@ -69,8 +72,6 @@ public class FrequencyGeneratorV2 : MonoBehaviour
 	public WaveFunction function;
 	public UserWaveform customWaveform = default;
 
-	[System.Serializable] public class FloatEvent : UnityEvent<float> { }
-	[System.Serializable] public class StringEvent : UnityEvent<string> { }
 	public FloatEvent OnFreqChange = new FloatEvent();
 	public FloatEvent OnOffsetChange = new FloatEvent();
 	public StringEvent refreshFreqStrings = new StringEvent();
