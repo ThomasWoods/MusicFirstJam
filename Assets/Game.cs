@@ -42,7 +42,7 @@ public class Game : MonoBehaviour
 	{
 		foreach (FrequencyGeneratorV2 g in generators)
 		{
-			g.Freq = Random.Range(50, 401);
+			g.TargetFreq = Random.Range(50, 401);
 			g.SetWaveType(Random.Range(0, 4));
 		}
 	}

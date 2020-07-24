@@ -39,6 +39,7 @@ public class UserWaveform : MonoBehaviour
 		{
 			GameObject o=Instantiate(obj, list.transform);
 			o.name = "Obj " + i;
+			o.SetActive(true);
 			sampleObjs[i] = o;
 		}
 

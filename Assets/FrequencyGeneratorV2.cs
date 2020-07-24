@@ -27,7 +27,7 @@ public class FrequencyGeneratorV2 : MonoBehaviour
 
 	public int _offset = 0;
 	public int offset { get { return _offset; } set { _offset = value; OnOffsetChange.Invoke(offset); } }
-	int sampleRate = 44100;
+	public int sampleRate = 44100;
 	public float _Freq = 440;
 	public float Freq
 	{
@@ -44,9 +44,20 @@ public class FrequencyGeneratorV2 : MonoBehaviour
 		set {
 			float newF = 0;
 			bool b = float.TryParse(value, out newF);
-			if (b) Freq = newF;
+			if (b) TargetFreq = newF;
 		}
 	}
+
+	public float _targetFreq = 440;
+	public float TargetFreq
+	{
+		get { return _targetFreq; }
+		set { _targetFreq = value; }
+	}
+	public bool useSmoothing { get; set; }
+	public float smoothDampVel=0;
+	public float SmoothDampTime = 0.1f;
+
 	public float _Volume = 1;
 	public float Volume
 	{
@@ -54,8 +65,8 @@ public class FrequencyGeneratorV2 : MonoBehaviour
 		set { _Volume = value;}
 	}
 
-	delegate float WaveFunction(int i, float frequency, float sampleFreq);
-	WaveFunction function;
+	public delegate float WaveFunction(int i, float frequency, float sampleFreq);
+	public WaveFunction function;
 	public UserWaveform customWaveform = default;
 
 	[System.Serializable] public class FloatEvent : UnityEvent<float> { }
@@ -73,9 +84,18 @@ public class FrequencyGeneratorV2 : MonoBehaviour
 
 		OnFreqChange.AddListener(updateHertz);
 		OnOffsetChange.AddListener(updateOffset);
+		if (customWaveform != null) customWaveform.OnWaveFormUpdate.AddListener(OnCustomWaveformChanged);
 		yield return null;
 		OnFreqChange.Invoke(Freq);
 
+	}
+	private void Update()
+	{
+		if (Freq != TargetFreq)
+		{
+			if (useSmoothing) Freq = Mathf.SmoothDamp(Freq, TargetFreq, ref smoothDampVel, SmoothDampTime);
+			else Freq = TargetFreq;
+		}
 	}
 
 
@@ -89,10 +109,14 @@ public class FrequencyGeneratorV2 : MonoBehaviour
 		refreshOffsetStrings.Invoke(offset.ToString());
 		OnFreqChange.Invoke(Freq);
 	}
+	void OnCustomWaveformChanged()
+	{
+		OnFreqChange.Invoke(Freq);
+	}
 
 	public void TuneFreq(float f)
 	{
-		Freq += f;
+		TargetFreq += f;
 	}
 	public void TuneOffset(float f)
 	{
