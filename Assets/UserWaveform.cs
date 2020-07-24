@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Events;
 
-public class CustomFrequency : MonoBehaviour
+public class UserWaveform : MonoBehaviour
 {
 	Camera cam;
 	RectTransform rTransfrom = default;
@@ -47,22 +47,22 @@ public class CustomFrequency : MonoBehaviour
 
 	public void Enter()
 	{
-		Debug.Log("OnMouseEnter");
+		//Debug.Log("OnMouseEnter");
 		isHovering = true;
 	}
 	public void Exit()
 	{
-		Debug.Log("OnMouseExit");
+		//Debug.Log("OnMouseExit");
 		isHovering = false;
 	}
 	public void DragStart()
 	{
-		Debug.Log("OnDragStart");
+		//Debug.Log("OnDragStart");
 		isDragging = true;
 	}
 	public void DragEnd()
 	{
-		Debug.Log("OnDragEnd");
+		//Debug.Log("OnDragEnd");
 		isDragging = false;
 	}
 	void Update()

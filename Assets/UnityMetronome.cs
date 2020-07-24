@@ -5,7 +5,7 @@ using UnityEngine.Events;
 
 
 //https://answers.unity.com/questions/1417541/is-it-possible-to-create-sound-with-scripting.html
-public class AudioGen1 : MonoBehaviour
+public class UnityMetronome : MonoBehaviour
 {
 	public double bpm = 140.0F;
 	public float gain = 0.5F;
