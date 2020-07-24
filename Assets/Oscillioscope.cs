@@ -31,7 +31,7 @@ public class Oscillioscope : MonoBehaviour
 	private void Start()
 	{
 		if (dataPointsParent == null) return;
-		for (int i = 0; i < 1024; i++)
+		for (int i = 0; i < resolution; i++)
 		{
 			GameObject o = Instantiate(dataPointPrefab, dataPointsParent);
 			o.name = "Data Point " + i.ToString("0000");

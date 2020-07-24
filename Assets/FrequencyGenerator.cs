@@ -34,10 +34,8 @@ public class FrequencyGenerator : MonoBehaviour
 	static public int _position = 0;
 	static public int position { get { return _position; } set { _position = value; } }
 	public int usingPosition { get { return _position + _offset; } }
-	public float _offsetPerc = 0;
-	public float offsetPerc { get { return _offsetPerc; } set { _offsetPerc = value; offset = Mathf.FloorToInt((sampleRate/Freq) * offsetPerc); updateOffset(0); } }
 	public int _offset = 0;
-	public int offset { get { return _offset; } set { _offset = value; updateOscilloscope(); } }
+	public int offset { get { return _offset; } set { _offset = value; OnOffsetChange.Invoke(offset); } }
 	int sampleRate = 44100;
 	public float _usingFreq = 440;
 	public float _Freq = 440;
@@ -84,6 +82,7 @@ public class FrequencyGenerator : MonoBehaviour
 	[System.Serializable] public class FloatEvent : UnityEvent<float> { }
 	[System.Serializable] public class StringEvent : UnityEvent<string> { }
 	public FloatEvent OnFreqChange = new FloatEvent();
+	public FloatEvent OnOffsetChange = new FloatEvent();
 	public StringEvent refreshFreqStrings = new StringEvent();
 	public StringEvent refreshOffsetStrings = new StringEvent();
 
@@ -95,8 +94,11 @@ public class FrequencyGenerator : MonoBehaviour
 	IEnumerator Start()
 	{
 		var a = gameObject.GetComponent<AudioSource>();
-		if(a==null) a = gameObject.AddComponent<AudioSource>();
-		a.volume = 0.075f;
+		if (a == null)
+		{
+			a = gameObject.AddComponent<AudioSource>();
+			a.volume = 0.075f;
+		}
 		running = true;
 		waveType = WaveType.Sine;
 		usingWaveFunc = Sine;
@@ -113,9 +115,10 @@ public class FrequencyGenerator : MonoBehaviour
 		}
 
 		OnFreqChange.AddListener(updateOscilloscope);
+		OnOffsetChange.AddListener(updateOscilloscope);
 		if(customWaveform!=null)customWaveform.OnWaveFormUpdate.AddListener(updateOscilloscope);
 		OnFreqChange.AddListener(updateHertz);
-		OnFreqChange.AddListener(updateOffset);
+		OnOffsetChange.AddListener(updateOffset);
 		yield return null;
 		OnFreqChange.Invoke(Freq);
 
@@ -142,15 +145,15 @@ public class FrequencyGenerator : MonoBehaviour
 		NumberOfGenerators--;
 	}
 
-	void updateOscilloscope() { updateOscilloscope(Freq); }
-	void updateOscilloscope(float f)
+	void updateOscilloscope(float f) { updateOscilloscope(); }
+	void updateOscilloscope()
 	{
 		if (line != null)
 		{
 			Transform[] children = line.GetComponentsInChildren<Transform>(false);
 			for (int i = 0; i < children.Length - 1; i++)
 			{
-				children[i + 1].localPosition = new Vector3(i, newWaveFunc(i+offset, f, sampleRate) * mult, 0);
+				children[i + 1].localPosition = new Vector3(i, newWaveFunc(i+offset, Freq, sampleRate) * mult, 0);
 			}
 		}
 	}
@@ -162,7 +165,6 @@ public class FrequencyGenerator : MonoBehaviour
 
 	void updateOffset(float f)
 	{
-		//refreshOffsetStrings.Invoke(offsetPerc.ToString("0.00")+"%");
 		refreshOffsetStrings.Invoke(offset.ToString("0"));
 	}
 
@@ -175,31 +177,16 @@ public class FrequencyGenerator : MonoBehaviour
 		offset += (int)Mathf.Sign(f);
 		updateOffset(f);
 	}
-	/*
-	private void OnDrawGizmos()
-	{
-		float offset = 0;
-		Vector2 offsetVector = new Vector2();
-		int x = 0;
-		for (int a = 0; a < displayedSamples.Count; a++)
-		{
-			for (int b = 0; b < displayedSamples[a].Length; b++)
-			{
-				if (a == 0)
-				{
-					if (b == 0) offsetVector = new Vector2(b,0);
-					if (b == 1) offsetVector.y = b- offsetVector.x;
-				}
-				else
-				{
 
-				}
-				Gizmos.DrawSphere(new Vector3(x+b, displayedSamples[a][b]*10, 0), 1);
-			}
-			x += displayedSamples[a].Length;
-		}
+	public float getSample(int n)
+	{
+		return usingWaveFunc(usingPosition + n, _usingFreq, sampleRate);
 	}
-	*/
+	public float getSampleUniversal(int n)
+	{
+		return usingWaveFunc(n+offset, _usingFreq, sampleRate);
+	}
+
 	void OnAudioFilterRead(float[] data, int channels)
 	{
 		if (!running)
@@ -208,25 +195,11 @@ public class FrequencyGenerator : MonoBehaviour
 		samplesStack.Enqueue((float[])samples.Clone());
 		samples = new float[dataLen]; 
 
-		/*
-		int n = 0;
-		while (n < dataLen)
-		{
-			int i = 0;
-			while (i < channels)
-			{
-				data[n * channels + i] = n<dataLen/2?n%2==0?0.5f:-0.5f:0;
-				i++;
-			}
-			n++;
-		}
-		*/
 		float target=0;
 		if (setTranstion)
 		{
 			target = newWaveFunc(usingPosition+dataLen, Freq, sampleRate);
 			transition = true;
-			//Debug.Log("Transition: "+ lastSamples[0]+"->"+target+" ~"+(Mathf.Abs(lastSamples[0] - target) / stepsize));
 		}
 		int n = 0;
 		while (n < dataLen)
@@ -236,45 +209,33 @@ public class FrequencyGenerator : MonoBehaviour
 			{
 				if (transition)
 				{
-					//data[n * channels + i] = Mathf.MoveTowards(lastSamples[i], target, stepsize);
 					data[n * channels + i] = Mathf.MoveTowards(lastSamples[i], target, stepsize);
 					lastSamples[i] = data[n * channels + i];
 					if (Mathf.Abs(lastSamples[0] - target) <= stepsize)
 					{
 						_usingFreq = Freq;
 						usingWaveFunc = newWaveFunc;
-						//position -= n;
 						transition = false;
 						setTranstion = false;
 					}
 				}
 				else
 				{
-					data[n * channels + i] += usingWaveFunc(usingPosition + n, _usingFreq, sampleRate);
+					data[n * channels + i] += getSample(n);
 					lastSamples[i] = data[n * channels + i];
 				}
 				i++;
 			}
-			//Debug.Log(n * channels);
 			samples[n] = data[n * channels];
 			n++;
 		}
 		if (transition)
 		{
-			//if (Mathf.Abs(lastSamples[0] - target) <= stepsize)
-			//{
 			_usingFreq = Freq;
 			usingWaveFunc = newWaveFunc;
-			//position -= n;
 			transition = false;
 			setTranstion = false;
-			//Debug.Log(transitionTime);
-			//transitionTime = 0;
-			//}
-			//transitionTime++;
 		}
-		//if(!transition)
-		//	position += n;
 
 		GeneratorUpdates++;
 		if (GeneratorUpdates >= NumberOfGenerators)

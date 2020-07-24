@@ -7,61 +7,56 @@ using UnityEngine.Events;
 //https://answers.unity.com/questions/1417541/is-it-possible-to-create-sound-with-scripting.html
 public class FrequencyGeneratorV2 : MonoBehaviour
 {
-
 	[System.Serializable]
 	public enum WaveType { Sine, Rect, Sawtooth, Triangle, Custom }
 	public WaveType waveType;
-	public void SetWaveype(int i) { SetWaveType((WaveType)i); ; }
-	public void SetWaveType(WaveType newWaveType){
-		if (setTranstion) return;
+	public void SetWaveType(int i) { SetWaveType((WaveType)i); ; }
+	public void SetWaveType(WaveType newWaveType)
+	{
 		waveType = newWaveType;
 		switch (waveType)
 		{
-			case WaveType.Sine: newWaveFunc = Sine; break;
-			case WaveType.Rect: newWaveFunc = Rect; break;
-			case WaveType.Sawtooth: newWaveFunc = Sawt; break;
-			case WaveType.Triangle: newWaveFunc = Tria; break;
-			case WaveType.Custom: newWaveFunc = Cust; break;
+			case WaveType.Sine: function = Sine; break;
+			case WaveType.Rect: function = Rect; break;
+			case WaveType.Sawtooth: function = Sawt; break;
+			case WaveType.Triangle: function = Tria; break;
+			case WaveType.Custom: function = Cust; break;
 		}
-		setTranstion = true;
-		OnFreqChange.Invoke(_Freq);
+		OnFreqChange.Invoke(Freq);
 	}
 
-
-	private bool running = false;
-
-	public float[] lastSamples=new float[2];
-	static public int _position = 0;
-	static public int position { get { return _position; } set { _position = value; } }
-	public int usingPosition { get { return _position + _offset; } }
-	public float _offsetPerc = 0;
-	public float offsetPerc { get { return _offsetPerc; } set { _offsetPerc = value; offset = Mathf.FloorToInt((sampleRate/Freq) * offsetPerc); updateOffsetPercDisplay(0); } }
 	public int _offset = 0;
 	public int offset { get { return _offset; } set { _offset = value; OnOffsetChange.Invoke(offset); } }
 	int sampleRate = 44100;
-	public float _usingFreq = 440;
 	public float _Freq = 440;
 	public float Freq
 	{
 		get { return _Freq; }
-		set { if (setTranstion) return; _Freq = value; setTranstion = true; OnFreqChange.Invoke(_Freq); }
+		set { _Freq = value; OnFreqChange.Invoke(_Freq); }
+	}
+	public string FreqS
+	{
+		get {
+			string s = Freq.ToString("0.00") + "Hz";
+			if (Mathf.Abs(Freq) > 1000) s = (Freq / 1000).ToString("0.000") + "KHz";
+			return s;
+		}
+		set {
+			float newF = 0;
+			bool b = float.TryParse(value, out newF);
+			if (b) Freq = newF;
+		}
 	}
 	public float _Volume = 1;
 	public float Volume
 	{
 		get { return _Volume; }
-		set { if (setTranstion) return; _Volume = value; setTranstion = true; OnFreqChange.Invoke(_Freq); }
+		set { _Volume = value;}
 	}
 
-	public bool transition=false, setTranstion=false;
-	public float stepsize = 0.0075f, transitionTime;
-
 	delegate float WaveFunction(int i, float frequency, float sampleFreq);
-	WaveFunction usingWaveFunc, newWaveFunc;
-
-	public GameObject customFunc = default;
-
-	public float mult = 1;
+	WaveFunction function;
+	public UserWaveform customWaveform = default;
 
 	[System.Serializable] public class FloatEvent : UnityEvent<float> { }
 	[System.Serializable] public class StringEvent : UnityEvent<string> { }
@@ -70,107 +65,46 @@ public class FrequencyGeneratorV2 : MonoBehaviour
 	public StringEvent refreshFreqStrings = new StringEvent();
 	public StringEvent refreshOffsetStrings = new StringEvent();
 
-	public UserWaveform customWaveform = default;
-
-	public static int NumberOfGenerators = 0;
-	public static int GeneratorUpdates = 0;
 
 	IEnumerator Start()
 	{
-		var a = gameObject.GetComponent<AudioSource>();
-		if(a==null) a = gameObject.AddComponent<AudioSource>();
-		a.volume = 0.075f;
-		running = true;
 		waveType = WaveType.Sine;
-		usingWaveFunc = Sine;
-		newWaveFunc = Sine;
-		_usingFreq = Freq;
+		function = Sine;
 
-		OnFreqChange.AddListener(updateHertzDisplay);
-		OnOffsetChange.AddListener(updateOffsetPercDisplay);
+		OnFreqChange.AddListener(updateHertz);
+		OnOffsetChange.AddListener(updateOffset);
 		yield return null;
 		OnFreqChange.Invoke(Freq);
 
 	}
 
 
-	private void OnEnable()
+	void updateHertz(float f)
 	{
-		NumberOfGenerators++;
-	}
-	private void OnDisable()
-	{
-		NumberOfGenerators--;
+		refreshFreqStrings.Invoke(FreqS);
 	}
 
-
-	void updateHertzDisplay(float f)
+	void updateOffset(float f)
 	{
-		string s = "Hz";
-		if (f > 1000) { Freq /= 1000; s = "KHz"; }
-		refreshFreqStrings.Invoke(Freq.ToString("0.00") + s);
+		refreshOffsetStrings.Invoke(offset.ToString());
+		OnFreqChange.Invoke(Freq);
 	}
 
-	void updateOffsetPercDisplay(float f)
+	public void TuneFreq(float f)
 	{
-		refreshOffsetStrings.Invoke(offsetPerc.ToString("0.00")+"%");
+		Freq += f;
+	}
+	public void TuneOffset(float f)
+	{
+		offset += (int)Mathf.Sign(f);
+		updateOffset(f);
 	}
 
-	void OnAudioFilterRead(float[] data, int channels)
+	public float getSample(int n)
 	{
-		if (!running)
-			return;
-		int dataLen = data.Length / channels;
-
-		float target=0;
-		if (setTranstion)
-		{
-			target = newWaveFunc(usingPosition+dataLen, Freq, sampleRate);
-			transition = true;
-		}
-		int n = 0;
-		while (n < dataLen)
-		{
-			int i = 0;
-			while (i < channels)
-			{
-				if (transition)
-				{
-					data[n * channels + i] = Mathf.MoveTowards(lastSamples[i], target, stepsize);
-					lastSamples[i] = data[n * channels + i];
-					if (Mathf.Abs(lastSamples[0] - target) <= stepsize)
-					{
-						_usingFreq = Freq;
-						usingWaveFunc = newWaveFunc;
-						transition = false;
-						setTranstion = false;
-					}
-				}
-				else
-				{
-					data[n * channels + i] += usingWaveFunc(usingPosition + n, _usingFreq, sampleRate);
-					lastSamples[i] = data[n * channels + i];
-				}
-				i++;
-			}
-			n++;
-		}
-		if (transition)
-		{
-			_usingFreq = Freq;
-			usingWaveFunc = newWaveFunc;
-			transition = false;
-			setTranstion = false;
-		}
-
-		GeneratorUpdates++;
-		if (GeneratorUpdates >= NumberOfGenerators)
-		{
-			position += n;
-			GeneratorUpdates = 0;
-		}
-		
+		return function(n + offset, Freq, sampleRate);
 	}
+
 
 
 	float Sine(int i, float frequency, float sampleRate) { return Mathf.Sin(Mathf.PI * 2 * i * frequency / sampleRate); }

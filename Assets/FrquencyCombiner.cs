@@ -4,7 +4,8 @@ using UnityEngine;
 
 public class FrquencyCombiner : MonoBehaviour
 {
-	public List<FrequencyGenerator> generators = new List<FrequencyGenerator>();
+	public List<FrequencyGeneratorV2> generators = new List<FrequencyGeneratorV2>();
+	int position = 0;
 
 	private void OnAudioFilterRead(float[] data, int channels)
 	{
@@ -14,10 +15,16 @@ public class FrquencyCombiner : MonoBehaviour
 		{
 			int i = 0;
 			while (i < channels) {
-				foreach (FrequencyGenerator f in generators) {
-
+				float s = 0;
+				foreach (FrequencyGeneratorV2 f in generators) {
+					if (f == null) continue;
+					s += f.getSample(position+n);
 				}
+				data[n * channels + i] = s / generators.Count;
+				i++;
 			}
+			n++;
 		}
+		position += n;
 	}
 }
