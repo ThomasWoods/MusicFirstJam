@@ -3980,6 +3980,27 @@ PrefabInstance:
   m_Modification:
     m_TransformParent: {fileID: 763167418}
     m_Modifications:
+    - target: {fileID: 831897514925664305, guid: 8983347c962bb3e4e929ebb69cb6b529,
+        type: 3}
+      propertyPath: m_FontData.m_Font
+      value: 
+      objectReference: {fileID: 12800000, guid: 316d189b4e052274b901bd75890d6726,
+        type: 3}
+    - target: {fileID: 831897514925664305, guid: 8983347c962bb3e4e929ebb69cb6b529,
+        type: 3}
+      propertyPath: m_FontData.m_FontSize
+      value: 70
+      objectReference: {fileID: 0}
+    - target: {fileID: 831897514925664305, guid: 8983347c962bb3e4e929ebb69cb6b529,
+        type: 3}
+      propertyPath: m_FontData.m_BestFit
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 831897514925664305, guid: 8983347c962bb3e4e929ebb69cb6b529,
+        type: 3}
+      propertyPath: m_FontData.m_MinSize
+      value: 7
+      objectReference: {fileID: 0}
     - target: {fileID: 976352003589117608, guid: 8983347c962bb3e4e929ebb69cb6b529,
         type: 3}
       propertyPath: m_PixelsPerUnitMultiplier
@@ -4140,6 +4161,27 @@ PrefabInstance:
         type: 3}
       propertyPath: m_SizeDelta.x
       value: 900
+      objectReference: {fileID: 0}
+    - target: {fileID: 2546660642931938662, guid: 8983347c962bb3e4e929ebb69cb6b529,
+        type: 3}
+      propertyPath: m_FontData.m_Font
+      value: 
+      objectReference: {fileID: 12800000, guid: 316d189b4e052274b901bd75890d6726,
+        type: 3}
+    - target: {fileID: 2546660642931938662, guid: 8983347c962bb3e4e929ebb69cb6b529,
+        type: 3}
+      propertyPath: m_FontData.m_FontSize
+      value: 60
+      objectReference: {fileID: 0}
+    - target: {fileID: 2546660642931938662, guid: 8983347c962bb3e4e929ebb69cb6b529,
+        type: 3}
+      propertyPath: m_FontData.m_MinSize
+      value: 6
+      objectReference: {fileID: 0}
+    - target: {fileID: 2546660642931938662, guid: 8983347c962bb3e4e929ebb69cb6b529,
+        type: 3}
+      propertyPath: m_Text
+      value: 0 Matches!
       objectReference: {fileID: 0}
     - target: {fileID: 2646160156430432601, guid: 8983347c962bb3e4e929ebb69cb6b529,
         type: 3}
@@ -4355,6 +4397,11 @@ PrefabInstance:
     - target: {fileID: 7406144772430586386, guid: 8983347c962bb3e4e929ebb69cb6b529,
         type: 3}
       propertyPath: m_AnchoredPosition.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7577727689616257756, guid: 8983347c962bb3e4e929ebb69cb6b529,
+        type: 3}
+      propertyPath: m_IsActive
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 7614815506722004202, guid: 8983347c962bb3e4e929ebb69cb6b529,
